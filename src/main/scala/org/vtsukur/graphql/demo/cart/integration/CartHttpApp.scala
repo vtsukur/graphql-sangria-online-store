@@ -118,6 +118,21 @@ class CartHttpApp(cartService: CartService,
       )
     )
 
-    val definition = Schema(query)
+    val CartIdArg = Argument("cartId", LongType)
+    val ProductIdArg = Argument("productId", StringType)
+    val QuantityArg: Argument[Int] = Argument.createWithDefault(
+      "quantity", OptionInputType(IntType), None, Some(1))
+
+    val mutation = ObjectType(
+      "Mutation",
+      fields[CartService, Unit](
+        Field("addProductToCart", OptionType(CartType),
+          arguments = List(CartIdArg, ProductIdArg, QuantityArg),
+          resolve = c => c.ctx.addProductToCart(c.arg(CartIdArg), c.arg(ProductIdArg), c.arg(QuantityArg))
+        )
+      )
+    )
+
+    val definition = Schema(query, Some(mutation))
   }
 }
