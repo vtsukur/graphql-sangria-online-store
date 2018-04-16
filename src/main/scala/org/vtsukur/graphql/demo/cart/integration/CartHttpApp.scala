@@ -50,12 +50,13 @@ class CartHttpApp(cartService: CartService,
       }
   }
 
-  case class ProductDeferred(productId: String) extends Deferred[ProductDto]
+  case class ProductDeferred(productId: String, fields: Seq[String]) extends Deferred[ProductDto]
 
   class ProductDelayedResolver extends DeferredResolver[Any] {
     override def resolve(deferred: Vector[Deferred[Any]], ctx: Any, queryState: Any)(implicit ec: ExecutionContext): Vector[Future[Any]] = {
-      val productIds = deferred.map { case ProductDeferred(id) => id }
-      productServiceClient.fetchProductsByIdsSync(productIds)
+      val productIds = deferred.map { case ProductDeferred(id, _) => id }
+      val fields = deferred.head.asInstanceOf[ProductDeferred].fields
+      productServiceClient.fetchProductsByIdsSync(productIds, fields)
         .products
         .map(Future(_)(ec))
         .toVector
@@ -82,9 +83,11 @@ class CartHttpApp(cartService: CartService,
       fields[Unit, Item](
         Field("productId", StringType, resolve = _.value.productId,
           deprecationReason = Some("I need the whole Product, not just id!")),
-        Field("product", ProductType, resolve = { c =>
-          ProductDeferred(c.value.productId)
-        }),
+        Field("product", ProductType, resolve =
+          Projector.apply((c, fieldNames) => {
+            ProductDeferred(c.value.productId, fieldNames.map(_.name))
+          })
+        ),
         Field("quantity", IntType, resolve = _.value.quantity),
         Field("total", BigDecimalType, resolve = _.value.total)
       )
