@@ -47,7 +47,19 @@ class CartHttpApp(cartService: CartService,
   }
 
   object CartSchema {
-    val ProductType: ObjectType[Unit, ProductDto] = deriveObjectType[Unit, ProductDto]()
+    val ProductType: ObjectType[Unit, ProductDto] = deriveObjectType[Unit, ProductDto](
+      ReplaceField(
+        "images",
+        Field("images",
+          ListType(StringType),
+          arguments = List(Argument.createWithDefault("limit", OptionInputType(IntType), None, Some(0))),
+          resolve = c => {
+            val requestedLimit = c.arg[Int]("limit")
+            val images = c.value.images.get
+            images.take(if (requestedLimit <= 0) images.size else Math.min(images.size, requestedLimit))
+          })
+      )
+    )
 
     val ItemType = ObjectType(
       "Item",
