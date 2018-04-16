@@ -11,12 +11,14 @@ import org.vtsukur.graphql.demo.cart.integration.domain.CartService
 import org.vtsukur.graphql.demo.product.integration.domain.ProductDto
 import sangria.ast.Document
 import sangria.execution.Executor
+import sangria.execution.deferred.{Deferred, DeferredResolver}
 import sangria.macros.derive._
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
 import sangria.schema._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class CartHttpApp(cartService: CartService,
@@ -38,12 +40,26 @@ class CartHttpApp(cartService: CartService,
         }
       }
       readAndParseQuery(ast => {
-        Executor.execute(CartSchema.definition, ast, cartService)
+        Executor.execute(CartSchema.definition, ast, cartService,
+          deferredResolver = new ProductDelayedResolver
+        )
       })
     } ~
       (get & path("graphiql")) {
         getFromResource("graphiql.html")
       }
+  }
+
+  case class ProductDeferred(productId: String) extends Deferred[ProductDto]
+
+  class ProductDelayedResolver extends DeferredResolver[Any] {
+    override def resolve(deferred: Vector[Deferred[Any]], ctx: Any, queryState: Any)(implicit ec: ExecutionContext): Vector[Future[Any]] = {
+      val productIds = deferred.map { case ProductDeferred(id) => id }
+      productServiceClient.fetchProductsByIdsSync(productIds)
+        .products
+        .map(Future(_)(ec))
+        .toVector
+    }
   }
 
   object CartSchema {
@@ -67,7 +83,7 @@ class CartHttpApp(cartService: CartService,
         Field("productId", StringType, resolve = _.value.productId,
           deprecationReason = Some("I need the whole Product, not just id!")),
         Field("product", ProductType, resolve = { c =>
-          productServiceClient.fetchProductById(c.value.productId)
+          ProductDeferred(c.value.productId)
         }),
         Field("quantity", IntType, resolve = _.value.quantity),
         Field("total", BigDecimalType, resolve = _.value.total)
