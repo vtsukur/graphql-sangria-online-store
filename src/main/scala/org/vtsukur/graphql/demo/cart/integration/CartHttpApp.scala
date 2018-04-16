@@ -41,7 +41,8 @@ class CartHttpApp(cartService: CartService,
       }
       readAndParseQuery(ast => {
         Executor.execute(CartSchema.definition, ast, cartService,
-          deferredResolver = new ProductDelayedResolver
+          deferredResolver = new ProductDelayedResolver,
+          maxQueryDepth = Some(10)
         )
       })
     } ~
