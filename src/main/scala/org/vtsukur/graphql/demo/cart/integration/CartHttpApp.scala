@@ -10,8 +10,8 @@ import org.vtsukur.graphql.demo.cart.domain.{Cart, Item}
 import org.vtsukur.graphql.demo.cart.integration.domain.CartService
 import org.vtsukur.graphql.demo.product.integration.domain.ProductDto
 import sangria.ast.Document
-import sangria.execution.Executor
 import sangria.execution.deferred.{Deferred, DeferredResolver}
+import sangria.execution.{Executor, QueryReducer}
 import sangria.macros.derive._
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
@@ -42,7 +42,11 @@ class CartHttpApp(cartService: CartService,
       readAndParseQuery(ast => {
         Executor.execute(CartSchema.definition, ast, cartService,
           deferredResolver = new ProductDelayedResolver,
-          maxQueryDepth = Some(10)
+          maxQueryDepth = Some(10),
+          queryReducers = List(
+            QueryReducer.rejectComplexQueries[Any](200,
+              (_, _) => throw new IllegalArgumentException("Too complex query"))
+          )
         )
       })
     } ~
@@ -108,7 +112,8 @@ class CartHttpApp(cartService: CartService,
       fields[CartService, Unit](
         Field("cart", OptionType(CartType),
           arguments = List(Argument("id", LongType)),
-          resolve = c => c.ctx.findById(c.arg[Long]("id"))
+          resolve = c => c.ctx.findById(c.arg[Long]("id")),
+          complexity = Some((_, _, childScore) => childScore * 2)
         )
       )
     )
