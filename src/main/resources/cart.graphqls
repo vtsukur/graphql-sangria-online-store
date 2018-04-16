@@ -13,7 +13,17 @@ type Cart {
 }
 
 type Item {
-    productId: String!
+    productId: String! # @deprecated("I need the whole Product, not just id!")
+    product: Product!
     quantity: Int!
     total: BigDecimal!
+}
+
+type Product {
+    id: String!
+    title: String!
+    description: String!
+    sku: String!
+    price: BigDecimal!
+    images: [String]!
 }

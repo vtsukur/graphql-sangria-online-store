@@ -8,8 +8,10 @@ import io.circe.generic.auto._
 import org.vtsukur.graphql.demo.cart.client.ProductServiceClient
 import org.vtsukur.graphql.demo.cart.domain.{Cart, Item}
 import org.vtsukur.graphql.demo.cart.integration.domain.CartService
+import org.vtsukur.graphql.demo.product.integration.domain.ProductDto
 import sangria.ast.Document
 import sangria.execution.Executor
+import sangria.macros.derive._
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
 import sangria.schema._
@@ -45,10 +47,16 @@ class CartHttpApp(cartService: CartService,
   }
 
   object CartSchema {
+    val ProductType: ObjectType[Unit, ProductDto] = deriveObjectType[Unit, ProductDto]()
+
     val ItemType = ObjectType(
       "Item",
       fields[Unit, Item](
-        Field("productId", StringType, resolve = _.value.productId),
+        Field("productId", StringType, resolve = _.value.productId,
+          deprecationReason = Some("I need the whole Product, not just id!")),
+        Field("product", ProductType, resolve = { c =>
+          productServiceClient.fetchProductById(c.value.productId)
+        }),
         Field("quantity", IntType, resolve = _.value.quantity),
         Field("total", BigDecimalType, resolve = _.value.total)
       )
