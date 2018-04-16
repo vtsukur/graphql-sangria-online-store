@@ -1,0 +1,19 @@
+schema {
+    query: Query
+}
+
+type Query {
+    cart(id: Long): Cart
+}
+
+type Cart {
+    id: Long!
+    items: [Item]!
+    subTotal: BigDecimal!
+}
+
+type Item {
+    productId: String!
+    quantity: Int!
+    total: BigDecimal!
+}

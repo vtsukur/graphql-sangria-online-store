@@ -17,5 +17,8 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-optics" % "0.9.3",
 
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0"
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
+
+  "org.sangria-graphql" %% "sangria" % "1.4.0",
+  "org.sangria-graphql" %% "sangria-circe" % "1.2.1"
 )
