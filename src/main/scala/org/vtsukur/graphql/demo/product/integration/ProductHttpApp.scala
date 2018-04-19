@@ -11,17 +11,13 @@ class ProductHttpApp(service: ProductService) extends HttpApp {
   override protected def routes: Route = {
     pathPrefix("api") {
       pathPrefix("products") {
-        pathEnd {
-          get {
-            parameters('ids.?, 'include.?) { (ids, include) =>
-              getProductsHandler(ids, include)
-            }
+        (pathEnd & get) {
+          parameters('ids.?, 'include.?) { (ids, include) =>
+            getProductsHandler(ids, include)
           }
         } ~
-          path(Segment) { id =>
-            get {
-              getProductHandler(id)
-            }
+          (path(Segment) & get) { id =>
+            getProductHandler(id)
           }
       }
     }
