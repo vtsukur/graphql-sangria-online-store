@@ -61,7 +61,7 @@ class CartHttpApp(cartService: CartService,
     override def resolve(deferred: Vector[Deferred[Any]], ctx: Any, queryState: Any)(implicit ec: ExecutionContext): Vector[Future[Any]] = {
       val productIds = deferred.map { case ProductDeferred(id, _) => id }
       val fields = deferred.head.asInstanceOf[ProductDeferred].fields
-      productServiceClient.fetchProductsByIdsSync(productIds, fields)
+      productServiceClient.fetchProductsByIds(productIds, fields)
         .products
         .map(Future(_)(ec))
         .toVector

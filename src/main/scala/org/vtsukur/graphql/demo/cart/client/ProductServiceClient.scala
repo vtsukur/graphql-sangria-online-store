@@ -17,7 +17,7 @@ class ProductServiceClient extends StrictLogging {
       .unsafeBody.right.get
   }
 
-  def fetchProductsByIdsSync(ids: Seq[String], fields: Seq[String] = Seq.empty): ProductsDto = {
+  def fetchProductsByIds(ids: Seq[String], fields: Seq[String] = Seq.empty): ProductsDto = {
     sttp.get(uri"http://localhost:9090/api/products"
       .queryFragment(QueryFragment.KeyValue("ids", ids.mkString(",")))
       .queryFragment(QueryFragment.KeyValue("include", fields.mkString(",")))
