@@ -63,7 +63,7 @@ class CartHttpApp(cartService: CartService,
       val fields = deferred.head.asInstanceOf[ProductDeferred].fields
       productServiceClient.fetchProductsByIds(productIds, fields)
         .products
-        .map(Future(_)(ec))
+        .map(Future.successful)
         .toVector
     }
   }
