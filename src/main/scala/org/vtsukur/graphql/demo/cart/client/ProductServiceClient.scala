@@ -10,15 +10,17 @@ import org.vtsukur.graphql.demo.product.integration.domain.{ProductDto, Products
 class ProductServiceClient extends StrictLogging {
   private implicit val backend: SttpBackend[Id, Nothing] = HttpURLConnectionBackend()
 
+  private val baseUrl = "http://localhost:9090"
+
   def fetchProductById(id: String): ProductDto = {
-    sttp.get(uri"http://localhost:9090/api/products/$id")
+    sttp.get(uri"$baseUrl/api/products/$id")
       .response(asJson[ProductDto])
       .send()
       .unsafeBody.right.get
   }
 
   def fetchProductsByIds(ids: Seq[String], fields: Seq[String] = Seq.empty): ProductsDto = {
-    sttp.get(uri"http://localhost:9090/api/products"
+    sttp.get(uri"$baseUrl/api/products"
       .queryFragment(QueryFragment.KeyValue("ids", ids.mkString(",")))
       .queryFragment(QueryFragment.KeyValue("include", fields.mkString(",")))
     )
