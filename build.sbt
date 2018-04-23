@@ -9,6 +9,7 @@ libraryDependencies ++= Seq(
   "de.heikoseeberger" %% "akka-http-circe" % "1.20.1",
 
   "com.softwaremill.sttp" %% "core" % "1.1.12",
+  "com.softwaremill.sttp" %% "akka-http-backend" % "1.1.12",
   "com.softwaremill.sttp" %% "circe" % "1.1.12",
 
   "io.circe" %% "circe-core" % "0.9.3",
