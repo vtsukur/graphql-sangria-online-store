@@ -2,7 +2,7 @@ organization := "org.vtsukur.graphql.demo"
 name := "graphql-sangria-online-store"
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.6"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % "10.1.1",
